@@ -63,6 +63,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false);
+  const [performanceMetrics, setPerformanceMetrics] = useState<{
+    ttft: number;
+    tps: number;
+  } | null>(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [tokenCount, setTokenCount] = useState<number>(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -152,6 +158,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           let done = false;
           let isFirst = true;
           let text = '';
+          const startTime = Date.now();
+          let totalTokens = 0;
+
           while (!done) {
             if (stopConversationRef.current === true) {
               controller.abort();
@@ -162,8 +171,18 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             done = doneReading;
             const chunkValue = decoder.decode(value);
             text += chunkValue;
+
+            // 计算token数量（简单估算）
+            const newTokens = chunkValue.split(/\s+/).length;
+            totalTokens += newTokens;
+
             if (isFirst) {
               isFirst = false;
+              const ttft = Date.now() - startTime;
+              setPerformanceMetrics({
+                ttft,
+                tps: 0
+              });
               const updatedMessages: Message[] = [
                 ...updatedConversation.messages,
                 { role: 'assistant', content: chunkValue },
@@ -197,6 +216,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               });
             }
           }
+
+          // 计算TPS
+          const totalTime = (Date.now() - startTime) / 1000; // 转换为秒
+          const tps = totalTokens / totalTime;
+          setPerformanceMetrics(prev => ({
+            ...prev!,
+            tps
+          }));
+
           saveConversation(updatedConversation);
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
@@ -251,6 +279,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       pluginKeys,
       selectedConversation,
       stopConversationRef,
+      startTime,
+      tokenCount,
     ],
   );
 
@@ -442,6 +472,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
                   {t('Model')}: {selectedConversation?.model?.name} | {t('Temp')}
                   : {selectedConversation?.temperature} |
+                  {performanceMetrics && (
+                    <span className="ml-2">
+                      TTFT: {performanceMetrics.ttft.toFixed(2)}ms | TPS: {performanceMetrics.tps?.toFixed(2) || ''}
+                    </span>
+                  )}
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
                     onClick={handleSettings}
