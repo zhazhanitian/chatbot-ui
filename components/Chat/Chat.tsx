@@ -32,6 +32,7 @@ import { ErrorMessageDiv } from './ErrorMessageDiv';
 import { ModelSelect } from './ModelSelect';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
+import { MaxTokensSlider } from './MaxTokens';
 import { MemoizedChatMessage } from './MemoizedChatMessage';
 
 interface Props {
@@ -99,6 +100,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           key: apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
+          max_tokens: updatedConversation.max_tokens,
         };
         const endpoint = getEndpoint(plugin);
         let body;
@@ -398,7 +400,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           >
             {selectedConversation?.messages.length === 0 ? (
               <>
-                <div className="mx-auto flex flex-col space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
+                <div className="mx-auto flex flex-col space-y-5 md:space-y-10 px-3 pt-5 pb-32 md:pt-12 sm:max-w-[600px]">
                   <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
                     {models.length === 0 ? (
                       <div>
@@ -433,6 +435,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                           })
                         }
                       />
+
+                      <MaxTokensSlider
+                        label={t('Max Tokens')}
+                        onChangeMaxTokens={(max_tokens) =>
+                          handleUpdateConversation(selectedConversation, {
+                            key: 'max_tokens',
+                            value: max_tokens,
+                          })
+                        }
+                      />
                     </div>
                   )}
                 </div>
@@ -441,7 +453,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               <>
                 <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
                   {t('Model')}: {selectedConversation?.model?.name} | {t('Temp')}
-                  : {selectedConversation?.temperature} |
+                  : {selectedConversation?.temperature} | {t('Max Tokens')}:{' '}
+                  {selectedConversation?.max_tokens}
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
                     onClick={handleSettings}

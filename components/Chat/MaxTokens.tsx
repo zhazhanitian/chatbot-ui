@@ -2,31 +2,31 @@ import { FC, useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
-import { DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import { DEFAULT_MAX_TOKENS } from '@/utils/app/const';
 
 import HomeContext from '@/pages/api/home/home.context';
 
 interface Props {
   label: string;
-  onChangeTemperature: (temperature: number) => void;
+  onChangeMaxTokens: (maxTokens: number) => void;
 }
 
-export const TemperatureSlider: FC<Props> = ({
+export const MaxTokensSlider: FC<Props> = ({
   label,
-  onChangeTemperature,
+  onChangeMaxTokens,
 }) => {
   const {
     state: { conversations },
   } = useContext(HomeContext);
   const lastConversation = conversations[conversations.length - 1];
-  const [temperature, setTemperature] = useState(
-    lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
+  const [maxTokens, setMaxTokens] = useState(
+    lastConversation?.max_tokens ?? DEFAULT_MAX_TOKENS,
   );
   const { t } = useTranslation('chat');
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseFloat(event.target.value);
-    setTemperature(newValue);
-    onChangeTemperature(newValue);
+    const newValue = parseInt(event.target.value);
+    setMaxTokens(newValue);
+    onChangeMaxTokens(newValue);
   };
 
   return (
@@ -36,32 +36,32 @@ export const TemperatureSlider: FC<Props> = ({
       </label>
       <span className="text-[12px] text-black/50 dark:text-white/50 text-sm">
         {t(
-          'Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
+          'Higher values allow for longer responses, while lower values make responses more concise.',
         )}
       </span>
       <span className="mt-2 mb-1 text-center text-neutral-900 dark:text-neutral-100">
-        {temperature.toFixed(1)}
+        {maxTokens}
       </span>
       <input
         className="cursor-pointer"
         type="range"
-        min={0}
-        max={1}
-        step={0.1}
-        value={temperature}
+        min={100}
+        max={2048}
+        step={100}
+        value={maxTokens}
         onChange={handleChange}
       />
       <ul className="w mt-2 pb-8 flex justify-between px-[24px] text-neutral-900 dark:text-neutral-100 relative">
         <li className="flex justify-center">
-          <span className="absolute">{t('Precise')}</span>
+          <span className="absolute">{t('Short')}</span>
         </li>
         <li className="flex justify-center">
-          <span className="absolute">{t('Neutral')}</span>
+          <span className="absolute">{t('Medium')}</span>
         </li>
         <li className="flex justify-center">
-          <span className="absolute">{t('Creative')}</span>
+          <span className="absolute">{t('Long')}</span>
         </li>
       </ul>
     </div>
   );
-};
+}; 

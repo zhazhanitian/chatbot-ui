@@ -32,5 +32,10 @@
   "Temperature": "生成温度",
   "Precise": "保守",
   "Neutral": "中立",
-  "Creative": "随性"
+  "Creative": "随性",
+  "Max Tokens": "最大令牌数",
+  "Higher values allow for longer responses, while lower values make responses more concise.": "较高的数值允许更长的回复，而较低的数值会使回复更加简洁。",
+  "Short": "简短",
+  "Medium": "中等",
+  "Long": "较长"
 }
